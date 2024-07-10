@@ -41,7 +41,11 @@ public extension ICPCryptography {
             // eg.    Int(-129) >> 7 = -2
             //     BigInt(-129) >> 7 = -1   // should be -2
             // shift operator on BigInt is not applied on the 2's complement for negative numbers, instead it is applied on their absolute value.
-            assert(bigInt.magnitude < Int.max, "Can not leb128 encode bigInts > Int.max! shift operator not working")
+            // not used in Tangem
+            guard bigInt.magnitude < Int.max else {
+                print("🔴 Can not leb128 encode bigInts > Int.max! shift operator not working")
+                return Data()
+            }
             guard !bigInt.isZero else { return encodeSigned(Int(0)) }
             let integerValue = Int(truncatingIfNeeded: bigInt)
             return encodeSigned(integerValue)

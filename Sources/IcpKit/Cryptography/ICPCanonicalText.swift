@@ -6,10 +6,12 @@
 //
 
 import Foundation
+import Base32
 
 public extension ICPCryptography {
-    enum ICPCrc32Error: Error {
-        case invalidChecksum
+    enum ICPError: Error {
+        case invalidCrc32Checksum
+        case failedToDecodeBase32
     }
     
     private static let canonicalTextSeparator: String = "-"
@@ -25,7 +27,7 @@ public extension ICPCryptography {
     static func encodeCanonicalText(_ data: Data) -> String {
         let checksum = Cryptography.crc32(data)
         let dataWithChecksum = checksum + data
-        let base32Encoded = Cryptography.base32.encode(dataWithChecksum).lowercased().filter { $0 != "=" }
+        let base32Encoded = base32Encode(dataWithChecksum).lowercased().filter { $0 != "=" }
         let grouped = base32Encoded.grouped(by: canonicalTextSeparator, every: 5)
         return grouped
     }
@@ -35,12 +37,14 @@ public extension ICPCryptography {
         let base32Encoded: String
         if degrouped.count % 2 != 0 { base32Encoded = degrouped + "=" }
         else { base32Encoded = degrouped }
-        let decoded = try Cryptography.base32.decode(base32Encoded)
+        guard let decoded = base32DecodeToData(base32Encoded) else {
+            throw ICPError.failedToDecodeBase32
+        }
         let checksum = decoded.prefix(Cryptography.crc32Length)
         let data = decoded.suffix(from: Cryptography.crc32Length)
         let expectedChecksum = Cryptography.crc32(data)
         guard expectedChecksum == checksum else {
-            throw ICPCryptography.ICPCrc32Error.invalidChecksum
+            throw ICPError.invalidCrc32Checksum
         }
         return data
     }

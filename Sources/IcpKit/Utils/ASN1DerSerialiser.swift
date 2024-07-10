@@ -18,6 +18,7 @@ extension Cryptography {
     enum DERSerialisationError: Error {
         case invalidEcPublicKey
     }
+    
     static func der(uncompressedEcPublicKey publicKey: Data) throws -> Data {
         guard publicKey.count == 65,
               publicKey.first == 0x04 else {

@@ -12,9 +12,17 @@ import CryptoKit
 
 public extension ICPCryptography {
     /// https://internetcomputer.org/docs/current/references/ic-interface-spec/#hash-of-map
-    static func orderIndependentHash(_ value: any Encodable) throws -> Data
-    {
-        return try OIHasher({Data(CryptoKit.SHA256.hash(data: $0).bytes)}).encode(value)
+    static func orderIndependentHash(_ value: any Encodable) throws -> Data {
+        try OIHasher { data in
+            Data(Cryptography.sha256(data).bytes)
+        }.encode(value)
+    }
+}
+
+extension ContiguousBytes {
+    /// A property that returns an array of UInt8 bytes.
+    @inlinable var bytes: [UInt8] {
+        withUnsafeBytes { bytesPtr in Array(bytesPtr) }
     }
 }
 
