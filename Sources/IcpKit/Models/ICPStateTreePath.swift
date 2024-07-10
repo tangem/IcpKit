@@ -24,6 +24,18 @@ public struct ICPStateTreePath: Hashable {
     public var isEmpty: Bool { components.isEmpty }
 }
 
+public extension ICPStateTreePath {
+    static func readStateRequestPaths(requestID: Data) -> [ICPStateTreePath] {
+        [
+            ["time"],
+            ["request_status", .data(requestID), "status"],
+            ["request_status", .data(requestID), "reply"],
+            ["request_status", .data(requestID), "reject_code"],
+            ["request_status", .data(requestID), "reject_message"]
+        ].map { ICPStateTreePath($0) }
+    }
+}
+
 public enum ICPStateTreePathComponent: Hashable {
     case data(Data)
     case string(String)

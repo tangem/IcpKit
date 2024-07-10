@@ -25,7 +25,7 @@ extension CandidValue {
     }
     
     static func ICPTimestampNow() -> CandidValue {
-        return ICPTimestamp(UInt64(Date.now.timeIntervalSince1970) * 1_000_000_000)
+        return ICPTimestamp(UInt64(Date().timeIntervalSince1970) * 1_000_000_000)
     }
 }
 

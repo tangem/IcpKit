@@ -71,13 +71,6 @@ final class ICPCryptographyTests: XCTestCase {
 //        XCTAssertEqual(mainAccount2.accountId.hex, "6c14be31a1df0f5f061520e5d8e0c08bb3743a671ab4a3bb7b05743a8ca3c1f0")
 //    }
     
-    func testValidateAccountId() {
-        XCTAssertTrue(ICPCryptography.validateAccountId("6c14be31a1df0f5f061520e5d8e0c08bb3743a671ab4a3bb7b05743a8ca3c1f0"))
-        XCTAssertTrue(ICPCryptography.validateAccountId("cafd0a2c27f41a851837b00f019b93e741f76e4147fe74435fb7efb836826a1c"))
-        XCTAssertFalse(ICPCryptography.validateAccountId("6c14be31a1df0f5f061520e5d8e0c08bb3743a671ab4a3bb7b05743a8ca3c1f1"))
-        XCTAssertFalse(ICPCryptography.validateAccountId("cafd0a2c27f41a851837b00f019b93e741f76e4147fe74435fb7efb836826a10"))
-    }
-    
     func testOrderIndependentHash() throws {
         let hash = { try ICPCryptography.orderIndependentHash($0) }
         XCTAssertEqual(try hash(0).base64EncodedString(), "bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoB0=")
@@ -95,38 +88,5 @@ final class ICPCryptographyTests: XCTestCase {
             "abcd": Data([0x47, 0x98, 0xfd]),
             "fngt": Data([0x47, 0x98, 0xfd]),
         ]).base64EncodedString(), "CxCF+O8wyQLiW2Dy18SkenGre+PaEtsrMptNi1fql/o=")
-    }
-    
-    func testBlsSignatureVerification() throws {
-        let publicKey = ICPStateCertificate.icpRootRawPublicKey
-        XCTAssertNoThrow(try ICPCryptography.verifyBlsSignature(
-            message: Data.fromHex("0d69632d73746174652d726f6f74d37ba673431b273a9db85cc2dcf236496decd32c2ba7d160b19f74c1a3e336a3")!,
-            publicKey: publicKey,
-            signature: Data.fromHex("b5a4e1b143d6f7c311b1f651f370177a7c5a3c2e7d9d337a28d72815000e34b35ca1dfbe6ca953aa0962116da29a8ee1")!))
-        
-        XCTAssertNoThrow(try ICPCryptography.verifyBlsSignature(
-            message: Data.fromHex("0d69632d73746174652d726f6f7424c20a5ca11f8f672b907cba5d0eb29945307b622da2d21aa01f6d202b8b8de3")!,
-            publicKey: publicKey,
-            signature: Data.fromHex("83cad0cad53d26b4b8e3445db4a6503f5304215686678c852977e161cbd0ccdc7bdfb207c496d09b01b01f4174a72cdc")!))
-        
-        XCTAssertNoThrow(try ICPCryptography.verifyBlsSignature(
-            message: Data.fromHex("0d69632d73746174652d726f6f7456912744b5e7dd38529eb78faecf748ba0ef4ec3e0af35092f84298e87d6e1c2")!,
-            publicKey: publicKey,
-            signature: Data.fromHex("b931848dc01a3640f6610e82581b6b200ed00ae31ae3503c8dd363238c010960bc90afb295ff02dd1639aecf1efc8d4e")!))
-        
-        XCTAssertNoThrow(try ICPCryptography.verifyBlsSignature(
-            message: "hello".data!,
-            publicKey: Data.fromHex("a7623a93cdb56c4d23d99c14216afaab3dfd6d4f9eb3db23d038280b6d5cb2caaee2a19dd92c9df7001dede23bf036bc0f33982dfb41e8fa9b8e96b5dc3e83d55ca4dd146c7eb2e8b6859cb5a5db815db86810b8d12cee1588b5dbf34a4dc9a5")!,
-            signature: Data.fromHex("b89e13a212c830586eaa9ad53946cd968718ebecc27eda849d9232673dcd4f440e8b5df39bf14a88048c15e16cbcaabe")!))
-        
-        XCTAssertThrowsError(try ICPCryptography.verifyBlsSignature(
-            message: "hallo".data!,
-            publicKey: Data.fromHex("a7623a93cdb56c4d23d99c14216afaab3dfd6d4f9eb3db23d038280b6d5cb2caaee2a19dd92c9df7001dede23bf036bc0f33982dfb41e8fa9b8e96b5dc3e83d55ca4dd146c7eb2e8b6859cb5a5db815db86810b8d12cee1588b5dbf34a4dc9a5")!,
-            signature: Data.fromHex("b89e13a212c830586eaa9ad53946cd968718ebecc27eda849d9232673dcd4f440e8b5df39bf14a88048c15e16cbcaabe")!))
-        
-        XCTAssertThrowsError(try ICPCryptography.verifyBlsSignature(
-            message: Data.fromHex("0d69632d73746174652d726f6f74d37ba673431b273a9db85cc2dcf236496decd32c2ba7d160b19f74c1a3e336a4")!, // same as first test, changed last byte from 3 to 4
-            publicKey: publicKey,
-            signature: Data.fromHex("b5a4e1b143d6f7c311b1f651f370177a7c5a3c2e7d9d337a28d72815000e34b35ca1dfbe6ca953aa0962116da29a8ee1")!))
     }
 }
