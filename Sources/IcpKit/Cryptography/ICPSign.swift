@@ -13,17 +13,15 @@ import CryptoKit
 public struct ICPSigningInput {
     /// Input transaction parameters
     public let transactionParams: ICPTransactionParams
-    private let date: Date
     
     /// Creates instance
     /// - Parameters:
     ///   - destination: hex encoded destination address string
     ///   - amount: amount in ICP multiplied by decimals count (8)
-    ///   - date: current date (Date())
+    ///   - date: current timestamp
     ///   - memo: memo value
     public init(destination: Data, amount: UInt64, date: Date, memo: UInt64? = nil) {
-        self.transactionParams = ICPTransactionParams(destination: destination, amount: amount, memo: memo)
-        self.date = date
+        transactionParams = ICPTransactionParams(destination: destination, amount: amount, date: date, memo: memo)
     }
     
     /// Generates hashes for signing
@@ -46,12 +44,11 @@ public struct ICPSigningInput {
         
         let callRequestContent = ICPRequestBuilder.makeCallRequestContent(
             method: .transfer(
-                params: transactionParams,
-                createdAt: date
+                params: transactionParams
             ),
             requestType: .call,
             sender: sender,
-            date: date,
+            date: transactionParams.date,
             nonce: nonce
         )
         
@@ -62,7 +59,7 @@ public struct ICPSigningInput {
         let readStateRequestContent = ICPRequestBuilder.makeReadStateRequestContent(
             paths: paths,
             sender: sender,
-            date: date,
+            date: transactionParams.date,
             nonce: nonce
         )
         

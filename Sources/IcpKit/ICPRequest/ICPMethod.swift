@@ -30,7 +30,7 @@ public extension ICPMethod {
         )
     }
     
-    static func transfer(params: ICPTransactionParams, createdAt date: Date) -> ICPMethod {
+    static func transfer(params: ICPTransactionParams) -> ICPMethod {
         ICPMethod(
             canister: ICPSystemCanisters.ledger,
             methodName: "transfer",
@@ -40,7 +40,7 @@ public extension ICPMethod {
                 "amount": .ICPAmount(params.amount),
                 "fee": .ICPAmount(10000),
                 "memo": .natural64(params.memo ?? 0),
-                "created_at_time": .ICPTimestamp(date: date)
+                "created_at_time": .ICPTimestamp(date: params.date)
             ])
         )
     }
