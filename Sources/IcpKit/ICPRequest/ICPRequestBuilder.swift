@@ -14,6 +14,7 @@ public struct ICPRequestBuilder {
         method: ICPMethod,
         requestType: ICPRequestType,
         sender: ICPPrincipal = .dummy,
+        date: Date,
         nonce: Data
     ) -> ICPCallRequestContent {
         let serialisedArgs = CandidSerialiser().encode(method.args)
@@ -21,7 +22,7 @@ public struct ICPRequestBuilder {
             requestType: requestType,
             sender: sender.bytes,
             nonce: nonce,
-            ingressExpiry: makeIngressExpiry(),
+            ingressExpiry: makeIngressExpiry(date: date),
             methodName: method.methodName,
             canisterID: method.canister.bytes,
             arg: serialisedArgs
@@ -31,6 +32,7 @@ public struct ICPRequestBuilder {
     public static func makeReadStateRequestContent(
         paths: [ICPStateTreePath],
         sender: ICPPrincipal,
+        date: Date,
         nonce: Data
     ) -> ICPReadStateRequestContent {
         let encodedPaths = paths.map { $0.encodedComponents() }
@@ -38,13 +40,13 @@ public struct ICPRequestBuilder {
             requestType: .readState,
             sender: sender.bytes,
             nonce: nonce,
-            ingressExpiry: makeIngressExpiry(),
+            ingressExpiry: makeIngressExpiry(date: date),
             paths: encodedPaths
         )
     }
     
-    private static func makeIngressExpiry(_ seconds: TimeInterval = defaultIngressExpirySeconds) -> Int {
-        let expiryDate = Date().addingTimeInterval(seconds)
+    private static func makeIngressExpiry(date: Date, _ seconds: TimeInterval = defaultIngressExpirySeconds) -> Int {
+        let expiryDate = date.addingTimeInterval(seconds)
         let nanoSecondsSince1970 = expiryDate.timeIntervalSince1970 * 1e9
         return Int(nanoSecondsSince1970)
     }

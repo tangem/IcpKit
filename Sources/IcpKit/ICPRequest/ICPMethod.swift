@@ -40,7 +40,7 @@ public extension ICPMethod {
                 "amount": .ICPAmount(params.amount),
                 "fee": .ICPAmount(10000),
                 "memo": .natural64(params.memo ?? 0),
-                "created_at_time": .ICPTimestampNow()
+                "created_at_time": .ICPTimestamp(date: params.date)
             ])
         )
     }

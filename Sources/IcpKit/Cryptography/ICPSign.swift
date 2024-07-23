@@ -18,9 +18,10 @@ public struct ICPSigningInput {
     /// - Parameters:
     ///   - destination: hex encoded destination address string
     ///   - amount: amount in ICP multiplied by decimals count (8)
+    ///   - date: current timestamp
     ///   - memo: memo value
-    public init(destination: Data, amount: UInt64, memo: UInt64? = nil) {
-        transactionParams = ICPTransactionParams(destination: destination, amount: amount, memo: memo)
+    public init(destination: Data, amount: UInt64, date: Date, memo: UInt64? = nil) {
+        transactionParams = ICPTransactionParams(destination: destination, amount: amount, date: date, memo: memo)
     }
     
     /// Generates hashes for signing
@@ -47,6 +48,7 @@ public struct ICPSigningInput {
             ),
             requestType: .call,
             sender: sender,
+            date: transactionParams.date,
             nonce: nonce
         )
         
@@ -57,6 +59,7 @@ public struct ICPSigningInput {
         let readStateRequestContent = ICPRequestBuilder.makeReadStateRequestContent(
             paths: paths,
             sender: sender,
+            date: transactionParams.date,
             nonce: nonce
         )
         
