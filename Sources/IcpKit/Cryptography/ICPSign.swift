@@ -8,37 +8,18 @@
 import Foundation
 import CryptoKit
 
-/// Model for generation hashes to sign
-/// from transaction parameters
-public struct ICPSigningInput {
-    /// Input transaction parameters
-    public let transactionParams: ICPTransactionParams
-    
-    /// Creates instance
-    /// - Parameters:
-    ///   - destination: hex encoded destination address string
-    ///   - amount: amount in ICP multiplied by decimals count (8)
-    ///   - date: current timestamp
-    ///   - memo: memo value
-    public init(destination: Data, amount: UInt64, date: Date, memo: UInt64? = nil) {
-        transactionParams = ICPTransactionParams(destination: destination, amount: amount, date: date, memo: memo)
-    }
-    
-    /// Generates hashes for signing
-    /// - Parameters:
-    ///   - requestData: request data object passed from makeRequestData(for:nonce:)
-    ///   - domain: domain of the requests
-    /// - Returns: hashes for signing
-    public func hashes(requestData: ICPRequestsData, domain: ICPDomainSeparator) throws -> [Data] {
-        return requestData.hashes(for: domain)
-    }
-    
+public struct ICPSign {
     /// Generate 'call' and 'read_state' requests data from public key
     /// - Parameters:
     ///   - publicKey: public key data
-    ///   - nonce: random 32 bytes length data
+    ///   - nonce: random 32-bytes length data provider
+    ///   - transactionParams: input transaction params
     /// - Returns: Requests data
-    public func makeRequestData(for publicKey: Data, nonce: Data) throws -> ICPRequestsData {
+    public static func makeRequestData(
+        publicKey: Data,
+        nonce: () throws -> Data,
+        transactionParams: ICPTransactionParams
+    ) throws -> ICPRequestsData {
         let derEncodedPublicKey = try Cryptography.der(uncompressedEcPublicKey: publicKey)
         let sender = try ICPPrincipal.selfAuthenticatingPrincipal(derEncodedPublicKey: derEncodedPublicKey)
         
@@ -49,7 +30,7 @@ public struct ICPSigningInput {
             requestType: .call,
             sender: sender,
             date: transactionParams.date,
-            nonce: nonce
+            nonce: try nonce()
         )
         
         let requestID = try callRequestContent.calculateRequestId()
@@ -60,7 +41,7 @@ public struct ICPSigningInput {
             paths: paths,
             sender: sender,
             date: transactionParams.date,
-            nonce: nonce
+            nonce: try nonce()
         )
         
         return ICPRequestsData(
@@ -76,16 +57,16 @@ public struct ICPSigningInput {
 
 /// In order to execute transfer 2 requests are required:
 /// 'call' request and 'read_state' request.
-/// This struct aggregates data for generating both of them
+/// This struct aggregates data for generating both
 public struct ICPRequestsData {
-    let derEncodedPublicKey: Data
+    public let derEncodedPublicKey: Data
     let callRequestID: Data
     let readStateRequestID: Data
-    let callRequestContent: ICPCallRequestContent
-    let readStateRequestContent: ICPReadStateRequestContent
-    let readStateTreePaths: [ICPStateTreePath]
+    public let callRequestContent: ICPCallRequestContent
+    public let readStateRequestContent: ICPReadStateRequestContent
+    public let readStateTreePaths: [ICPStateTreePath]
     
-    fileprivate func hashes(for domain: ICPDomainSeparator) -> [Data] {
+    public func hashes(for domain: ICPDomainSeparator) -> [Data] {
         [
             hash(for: domain, requestID: callRequestID),
             hash(for: domain, requestID: readStateRequestID),
@@ -95,28 +76,5 @@ public struct ICPRequestsData {
     private func hash(for domain: ICPDomainSeparator, requestID: Data) -> Data {
         let domainSeparatedData = domain.domainSeparatedData(requestID)
         return Cryptography.sha256(domainSeparatedData)
-    }
-}
-
-/// Aggregates signed envelopes for further CBOR encoding and sending
-public struct ICPSigningOutput {
-    public let requestID: Data
-    public let callEnvelope: ICPRequestEnvelope<ICPCallRequestContent>
-    public let readStateEnvelope: ICPRequestEnvelope<ICPReadStateRequestContent>
-    public let readStateTreePaths: [ICPStateTreePath]
-    
-    public init(data: ICPRequestsData, callSignature: Data, readStateSignature: Data) {
-        requestID = data.callRequestID
-        callEnvelope = ICPRequestEnvelope(
-            content: data.callRequestContent,
-            senderPubkey: data.derEncodedPublicKey,
-            senderSig: callSignature
-        )
-        readStateEnvelope = ICPRequestEnvelope(
-            content: data.readStateRequestContent,
-            senderPubkey: data.derEncodedPublicKey,
-            senderSig: readStateSignature
-        )
-        readStateTreePaths = data.readStateTreePaths
     }
 }

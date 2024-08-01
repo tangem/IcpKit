@@ -13,7 +13,7 @@ public struct ICPTransactionParams {
     let date: Date
     let memo: UInt64?
     
-    public init(destination: Data, amount: UInt64, date: Date, memo: UInt64?) {
+    public init(destination: Data, amount: UInt64, date: Date, memo: UInt64? = nil) {
         self.destination = destination
         self.amount = amount
         self.date = date
