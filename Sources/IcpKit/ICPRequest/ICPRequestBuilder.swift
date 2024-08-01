@@ -45,7 +45,7 @@ public struct ICPRequestBuilder {
         )
     }
     
-    private static func makeIngressExpiry(date: Date, _ seconds: TimeInterval = defaultIngressExpirySeconds) -> Int {
+    private static func makeIngressExpiry(date: Date, _ seconds: TimeInterval = defaultIngressExpirySeconds) -> Int {        
         let expiryDate = date.addingTimeInterval(seconds)
         let nanoSecondsSince1970 = expiryDate.timeIntervalSince1970 * 1e9
         return Int(nanoSecondsSince1970)
