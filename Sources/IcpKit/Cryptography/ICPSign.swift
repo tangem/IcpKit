@@ -18,7 +18,7 @@ public struct ICPSign {
     public static func makeRequestData(
         publicKey: Data,
         nonce: () throws -> Data,
-        transactionParams: ICPTransactionParams
+        transactionParams: ICPTransaction.TransactionParams
     ) throws -> ICPRequestsData {
         let derEncodedPublicKey = try Cryptography.der(uncompressedEcPublicKey: publicKey)
         let sender = try ICPPrincipal.selfAuthenticatingPrincipal(derEncodedPublicKey: derEncodedPublicKey)

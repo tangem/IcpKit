@@ -30,7 +30,7 @@ public extension ICPMethod {
         )
     }
     
-    static func transfer(params: ICPTransactionParams) -> ICPMethod {
+    static func transfer(params: ICPTransaction.TransactionParams) -> ICPMethod {
         ICPMethod(
             canister: ICPSystemCanisters.ledger,
             methodName: "transfer",
