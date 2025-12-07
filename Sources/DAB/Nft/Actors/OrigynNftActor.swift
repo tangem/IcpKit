@@ -58,9 +58,8 @@ private extension OrigynNftActor {
             standard: .origynNft,
             index: .string(index),
             name: id,
-            url: previewUrl,
-            metadata: decodedMetada,
-            operator: nil,
+            imageUrl: previewUrl,
+            metadata: decodedMetada.icpNftMetadata(service.canister),
             canister: service.canister
         )
     }
@@ -85,6 +84,16 @@ struct OrigynNftMetadata {
         } else {
             customProperties = []
         }
+    }
+
+    func icpNftMetadata(_ canister: ICPPrincipal) -> ICPNftMetadataItem {
+        .dictionary([
+            "assets": .array(libraries.map { $0.icpNftMetadata(canister) }),
+            "properties": .dictionary(Dictionary(
+                customProperties.flatMap { $0.map { ($0.name, .string($0.value)) } },
+                uniquingKeysWith: { $1 }
+            ))
+        ])
     }
 }
 
@@ -122,6 +131,21 @@ struct OrigynNftLibrary {
         case .canister, .collection: return URL(string: "https://\(canister.string).raw.icp0.io/\(location)")
         case .unknown: return nil
         }
+    }
+
+    func icpNftMetadata(_ canister: ICPPrincipal) -> ICPNftMetadataItem {
+        var dict: [String: ICPNftMetadataItem] = [
+            "id": .string(id),
+            "name": .string(title),
+            "contentType": .string(contentType),
+            "contentHash": .string(contentHash),
+            "size": .number(size),
+            "sort": .number(sort),
+        ]
+        if let url = url(canister) {
+            dict["url"] = .url(url)
+        }
+        return .dictionary(dict)
     }
 }
 

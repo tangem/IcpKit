@@ -54,9 +54,8 @@ private extension EXTNftActor {
             standard: .ext,
             index: .number(BigUInt(nft.index)),
             name: "#\(nft.index)",
-            url: imageUrl,
+            imageUrl: imageUrl,
             metadata: decodeMetadata(nft.metadata),
-            operator: nil,
             canister: service.canister
         )
     }
@@ -75,11 +74,11 @@ private extension EXTNftActor {
         return ICPPrincipal(bytes).string
     }
     
-    private func decodeMetadata(_ metadata: Data?) -> Any? {
+    private func decodeMetadata(_ metadata: Data?) -> ICPNftMetadataItem? {
         guard let metadata = metadata else { return nil }
-        guard let string = String(data: metadata, encoding: .utf8) else { return metadata }
-        guard let decoded = try? JSONDecoder().decode(EXTMetadata.self, from: metadata) else { return string }
-        return decoded
+        guard let string = String(data: metadata, encoding: .utf8) else { return .data(metadata) }
+        guard let decoded = try? JSONDecoder().decode(EXTMetadata.self, from: metadata) else { return .string(string) }
+        return decoded.icpNftMetadata
     }
 }
 
@@ -124,5 +123,17 @@ private struct EXTMetadata: Decodable {
     struct Attribute: Decodable {
         let trait_type: String
         let value: String
+    }
+
+    var icpNftMetadata: ICPNftMetadataItem {
+        var metadata: [String: ICPNftMetadataItem] = [:]
+        if let thumb {
+            metadata["thumbnail"] = .url(thumb)
+        }
+        metadata["attributes"] = .dictionary(Dictionary(
+            attributes.map { ($0.trait_type, .string($0.value)) },
+            uniquingKeysWith: { $1 },
+        ))
+        return .dictionary(metadata)
     }
 }

@@ -49,7 +49,8 @@ class ICRC7NftActor: ICPNftActor {
 private extension ICRC7NftActor {
     typealias TokenMetadata = [CandidTuple2<String, ICRC7.Value>]
     func icpNftDetails(_ arg: (index: BigUInt, metadata: TokenMetadata?)) throws -> ICPNftDetails {
-        guard case .Text(let image) = arg.metadata?["image"],
+        var metadata = arg.metadata
+        guard case .Text(let image) = metadata?.take("image"),
               let imageUrl = URL(string: image) else {
             throw ICPNftActorError.invalidMetaData
         }
@@ -57,9 +58,8 @@ private extension ICRC7NftActor {
             standard: .icrc7,
             index: .number(arg.index),
             name: "#\(arg.index)",
-            url: imageUrl,
-            metadata: nil,
-            operator: nil,
+            imageUrl: imageUrl,
+            metadata: metadata?.icpNftMetaData,
             canister: service.canister
         )
     }
@@ -68,5 +68,34 @@ private extension ICRC7NftActor {
 extension ICRC7NftActor.TokenMetadata {
     subscript (_ key: String) -> ICRC7.Value? {
         first { $0._0 == key }?._1
+    }
+
+    mutating func take(_ key: String) -> ICRC7.Value? {
+        guard let index = firstIndex(where: { $0._0 == key }) else { return nil }
+        let removed = remove(at: index)
+        return removed._1
+    }
+
+    var icpNftMetaData: ICPNftMetadataItem {
+        .dictionary(Dictionary(
+            map { ($0._0, $0._1.icpNftMetaData) },
+            uniquingKeysWith: { $1 }
+        ))
+    }
+}
+
+private extension ICRC7.Value {
+    var icpNftMetaData: ICPNftMetadataItem {
+        switch self {
+        case .Int(let bigInt): return .number(bigInt)
+        case .Nat(let bigUInt): return .number(bigUInt)
+        case .Blob(let data): return .data(data)
+        case .Text(let string): return .string(string)
+        case .Array(let array): return .array(array.map(\.icpNftMetaData))
+        case .Map(let keyValues): return .dictionary(Dictionary(
+            keyValues.map { ($0._0, $0._1.icpNftMetaData) },
+            uniquingKeysWith: { $1 }
+        ))
+        }
     }
 }

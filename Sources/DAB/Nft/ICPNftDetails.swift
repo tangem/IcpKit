@@ -1,31 +1,29 @@
 //
 //  ICPNftDetails.swift
-//  
+//  ICPKit
 //
 //  Created by Konstantinos Gaitanis on 26.08.24.
 //
 
 import Foundation
 import IcpKit
-@preconcurrency import BigInt
+import BigInt
 
-public struct ICPNftDetails: @unchecked Sendable {
+public struct ICPNftDetails: Sendable {
     public let standard: ICPNftStandard
     
     public let index: Index
     public let name: String?
-    public let url: URL
-    public let metadata: Any?    // TODO: structure this
-    public let `operator`: String?
+    public let imageUrl: URL
+    public let metadata: ICPNftMetadataItem?
     public let canister: ICPPrincipal
     
-    public init(standard: ICPNftStandard, index: Index, name: String?, url: URL, metadata: Any?, `operator`: String?, canister: ICPPrincipal) {
+    public init(standard: ICPNftStandard, index: Index, name: String?, imageUrl: URL, metadata: ICPNftMetadataItem?, canister: ICPPrincipal) {
         self.standard = standard
         self.index = index
         self.name = name
-        self.url = url
+        self.imageUrl = imageUrl
         self.metadata = metadata
-        self.operator = `operator`
         self.canister = canister
     }
     
