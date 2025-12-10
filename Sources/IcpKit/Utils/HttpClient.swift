@@ -21,4 +21,9 @@ public struct HttpRequest {
 public struct HttpResponse {
     public let data: Data?
     public let statusCode: Int
+
+    public init(data: Data? = nil, statusCode: Int) {
+        self.data = data
+        self.statusCode = statusCode
+    }
 }

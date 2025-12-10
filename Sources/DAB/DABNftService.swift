@@ -34,29 +34,35 @@ public final class DABNftService: @unchecked Sendable {
         ICPNftActorFactory.actor(for: collection.standard, collection.canister, client)
     }
     
-    public func holdings(_ account: ICPPrincipal) async throws -> [ICPNftDetails] {
+    public func holdings(_ account: ICPPrincipal) async throws -> [ICPNftCollectionHolding] {
         let allCollections = try await allCollections()
         
-        return try await withThrowingTaskGroup(of: [ICPNftDetails].self) { group in
+        return try await withThrowingTaskGroup(of: ICPNftCollectionHolding?.self) { group in
             for collection in allCollections {
                 group.addTask { try await self.holding(account, collection) }
             }
-            var holding: [ICPNftDetails] = []
-            for try await collectionHolding in group {
-                holding.append(contentsOf: collectionHolding)
+            var holding: [ICPNftCollectionHolding] = []
+            let filtered = group.compactMap{ $0 }.filter { !$0.nfts.isEmpty }
+            for try await collectionHolding in filtered {
+                holding.append(collectionHolding)
             }
             return holding
         }
     }
-    
-    private func holding(_ account: ICPPrincipal, _ collection: ICPNftCollection) async throws -> [ICPNftDetails] {
-        guard let actor = actor(for: collection) else { return [] }
+
+    public func nftDetails(_ standard: ICPNftStandard, _ canister: ICPPrincipal, _ tokenId: ICPNftDetails.Index) async throws -> ICPNftDetails? {
+        guard let actor = ICPNftActorFactory.actor(for: standard, canister, client) else { return nil }
+        return try await actor.nftDetails(tokenId)
+    }
+
+    private func holding(_ account: ICPPrincipal, _ collection: ICPNftCollection) async throws -> ICPNftCollectionHolding? {
+        guard let actor = actor(for: collection) else { return nil }
         do {
             let holding = try await actor.userTokens(account)
-            return holding
+            return ICPNftCollectionHolding(collection: collection, nfts: holding)
         } catch {
             //print(error)
-            return []
+            return nil
         }
     }
 }

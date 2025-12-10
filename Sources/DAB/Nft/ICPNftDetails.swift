@@ -27,7 +27,7 @@ public struct ICPNftDetails: Sendable {
         self.canister = canister
     }
     
-    public enum Index: Sendable {
+    public enum Index: Sendable, Equatable {
         public enum IndexError: Error {
             case notANumber
             case notAString
