@@ -10,4 +10,9 @@ import Foundation
 public struct ICPNftCollectionHolding: Sendable {
     public var collection: ICPNftCollection
     public var nfts: [ICPNftDetails]
+
+    public init(collection: ICPNftCollection, nfts: [ICPNftDetails]) {
+        self.collection = collection
+        self.nfts = nfts
+    }
 }

@@ -65,21 +65,13 @@ public class DABTokenService: @unchecked Sendable {
     
     public func balance(of user: ICPAccount) async throws -> [ICPTokenBalance] {
         let tokens = try await allTokens()
-        let holdings = await withTaskGroup(of: ICPTokenBalance?.self) { group in
-            for token in tokens {
-                group.addTask {
-                    let actor = ICPTokenActorFactory.actor(for: token.standard, token.canister, self.client)
-                    guard let actor = actor else { return nil }
-                    guard let balance = try? await actor.balance(of: user),
-                          balance > .zero else { return nil }
-                    return ICPTokenBalance(token: token, balance: balance)
-                }
+        let holdings = await tokens.compactMapParallel { token in
+            guard let actor = ICPTokenActorFactory.actor(for: token.standard, token.canister, self.client),
+                  let balance = try? await actor.balance(of: user),
+                  balance > .zero else {
+                return ICPTokenBalance?.none
             }
-            var holdings: [ICPTokenBalance] = []
-            for await holding in group.compactMap({ $0 }) {
-                holdings.append(holding)
-            }
-            return holdings
+            return ICPTokenBalance(token: token, balance: balance)
         }
         return holdings
     }

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol ICPSigningPrincipal {
+public protocol ICPSigningPrincipal: Sendable {
     var principal: ICPPrincipal { get }
     var rawPublicKey: Data { get }
     

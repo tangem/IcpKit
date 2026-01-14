@@ -52,21 +52,13 @@ public final class TokenOracle: @unchecked Sendable {
     
     public func balance(of user: ICPAccount) async throws -> [ICPTokenBalance] {
         let tokens = try await allTokens()
-        let holdings = await withTaskGroup(of: ICPTokenBalance?.self) { group in
-            for token in tokens {
-                group.addTask {
-                    let actor = ICPTokenActorFactory.actor(for: token.standard, token.canister, self.client)
-                    guard let actor = actor else { return nil }
-                    guard let balance = try? await actor.balance(of: user),
-                          balance > .zero else { return nil }
-                    return ICPTokenBalance(token: token, balance: balance)
-                }
+        let holdings = await tokens.compactMapParallel { token in
+            guard let actor = ICPTokenActorFactory.actor(for: token.standard, token.canister, self.client),
+                  let balance = try? await actor.balance(of: user),
+                  balance > .zero else {
+                return ICPTokenBalance?.none
             }
-            var holdings: [ICPTokenBalance] = []
-            for await holding in group.compactMap({ $0 }) {
-                holdings.append(holding)
-            }
-            return holdings
+            return ICPTokenBalance(token: token, balance: balance)
         }
         return holdings
     }
@@ -108,21 +100,12 @@ private extension TokenOracle {
         let pageSize: UInt64 = 10
         let canisterCount = try await service.count_icrc1_canisters()
         let nPages = canisterCount / pageSize + 1
-        let canisters = await withTaskGroup(of: [ICRC1Oracle.ICRC1].self) { [weak self] group in
-            let service = self?.service
-            for i in 0..<nPages {
-                group.addTask {
-                    let startAt = i * pageSize
-                    let canisters = try? await service?.get_icrc1_paginated(startAt, pageSize)
-                    return canisters ?? []
-                }
-            }
-            var canisters: [ICRC1Oracle.ICRC1] = []
-            while let finished = await group.next() {
-                canisters.append(contentsOf: finished)
-            }
+        let pages = 0..<nPages
+        let canisters = await pages.compactMapParallel { [weak self] page in
+            let startAt = page * pageSize
+            let canisters = try? await self?.service.get_icrc1_paginated(startAt, pageSize)
             return canisters
-        }
+        }.flatMap { $0 }
         return canisters
     }
 }

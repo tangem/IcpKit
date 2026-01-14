@@ -36,16 +36,9 @@ public final class DABNftService: @unchecked Sendable {
     
     public func holdings(_ account: ICPPrincipal) async throws -> [ICPNftCollectionHolding] {
         let allCollections = try await allCollections()
-        
-        return try await withThrowingTaskGroup(of: ICPNftCollectionHolding?.self) { group in
-            for collection in allCollections {
-                group.addTask { try await self.holding(account, collection) }
-            }
-            var holding: [ICPNftCollectionHolding] = []
-            let filtered = group.compactMap{ $0 }.filter { !$0.nfts.isEmpty }
-            for try await collectionHolding in filtered {
-                holding.append(collectionHolding)
-            }
+        return await allCollections.compactMapParallel { collection in
+            guard let holding = try? await self.holding(account, collection),
+                  !holding.nfts.isEmpty else { return nil }
             return holding
         }
     }
