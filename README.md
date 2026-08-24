@@ -12,7 +12,7 @@ For more information about ICP Development, we recommend starting from https://i
 ## Contributors
 The main developer of this package is [Konstantinos Gaitanis](https://github.com/kgaitanis).
 
-This Package has been built by [Bity SA](https://bity.com) with the help of the [DFinity Foundation Developer Grant Program](https://dfinity.org/grants).
+Originally developed at [Bity SA](https://bity.com) with support from the [DFinity Foundation Developer Grant Program](https://dfinity.org/grants).
 
 ## License
 **MIT License** is applicable for all Swift Code (see [LICENSE](LICENSE)).
@@ -27,7 +27,7 @@ Adding IcpKit as a dependency to your Xcode project is as easy as adding it to t
 ```swift
 ...
 dependencies: [
-    .package(url: "https://github.com/kosta-bity/IcpKit.git", .upToNextMajor(from: "0.2.0"))
+    .package(url: "https://github.com/kgaitanis/IcpKit.git", .upToNextMajor(from: "0.2.0"))
 ]
 ...
 ```
