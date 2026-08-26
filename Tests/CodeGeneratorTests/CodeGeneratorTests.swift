@@ -121,7 +121,7 @@ let cValue: UnnamedType0 = .c(bool: true, int8: 7)
     
     func testIcrc7() async throws {
         // GoldNFT io7gn-vyaaa-aaaak-qcbiq-cai
-        let service = try ICRC7.Service("auw3m-7yaaa-aaaal-qjf6q-cai")
+        let service = try ICRC7.Service("io7gn-vyaaa-aaaak-qcbiq-cai")
         let collectionMetadata = try await service.icrc7_collection_metadata()
         for metadata in collectionMetadata {
             print(metadata.tuple)

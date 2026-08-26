@@ -26,10 +26,12 @@ final class DABTests: XCTestCase {
     }
     
     func testAccountHolding() async throws {
-        let nfts = try await nftService.holdings(devWallet1.principal)
-        for nft in nfts {
-            let details = try await nftService.actor(for: nft)!.nftDetails(nft.index)
-            print(details)
+        let collections = try await nftService.holdings(devWallet1.principal)
+        for collection in collections {
+            for nft in collection.nfts {
+                let details = try await nftService.actor(for: nft)!.nftDetails(nft.index)
+                print(details)
+            }
         }
     }
     
@@ -185,7 +187,7 @@ let devWallet1Name = "Development Wallet 1"
 let devWallet2Name = "Development Wallet 2"
 //let devWallet1 = try! SimplePrincipal(privateKey: PrivateKeys.devWallet1, uncompressedPublicKey: PublicKeys.devWallet1)
 //let devWallet2 = try! SimplePrincipal(privateKey: PrivateKeys.devWallet2, uncompressedPublicKey: PublicKeys.devWallet2)
-nonisolated(unsafe) let devWallet1 = try! SimplePrincipal(privateKey: Data(), uncompressedPublicKey: PublicKeys.devWallet1)
-nonisolated(unsafe) let devWallet2 = try! SimplePrincipal(privateKey: Data(), uncompressedPublicKey: PublicKeys.devWallet2)
+let devWallet1 = try! SimplePrincipal(privateKey: Data(), uncompressedPublicKey: PublicKeys.devWallet1)
+let devWallet2 = try! SimplePrincipal(privateKey: Data(), uncompressedPublicKey: PublicKeys.devWallet2)
 let devWallet1Account = ICPAccount.mainAccount(of: devWallet1.principal)
 let devWallet2Account = ICPAccount.mainAccount(of: devWallet2.principal)

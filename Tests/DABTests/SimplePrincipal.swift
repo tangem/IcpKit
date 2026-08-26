@@ -8,7 +8,7 @@
 import Foundation
 import IcpKit
 
-class SimplePrincipal: ICPSigningPrincipal {
+final class SimplePrincipal: ICPSigningPrincipal {
     let principal: ICPPrincipal
     let rawPublicKey: Data
     private let privateKey: Data
