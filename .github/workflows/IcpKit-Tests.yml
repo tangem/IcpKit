@@ -6,30 +6,32 @@ name: IcpKit Tests
 on:
   push:
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
-jobs:
-  build:
-    runs-on: macos-latest
+ios-tests:
+    runs-on: macos-26
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Run tests
-      run: swift test --enable-code-coverage --parallel
-    - name: Upload coverage to codecov.io
-      uses: codecov/codecov-action@v4.5.0
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-#jobs:
-#  build:
-#    runs-on: macOS-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v1
-#      - name: List iOS Simulators
-#        run:  xcrun simctl list
-#      - name: Build and Test
-#        run:  xcodebuild test -quiet -scheme IcpKit-Package -destination "OS=18.1,name=iPhone 15 Pro" '-skip-testing:IcpKitTests/ICPCryptographyTests/testBlsSignatureVerification'
-#      - name: Upload coverage to codecov.io
-#        uses: codecov/codecov-action@v4.5.0
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
+      - uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: sudo xcode-select --switch /Applications/Xcode_26.6.app
+
+      - name: Show environment
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun simctl list devices available
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -scheme IcpKit-Package \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -enableCodeCoverage YES \
+            -parallel-testing-enabled YES
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
